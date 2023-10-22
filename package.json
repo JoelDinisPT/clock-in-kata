@@ -4,7 +4,7 @@
   "description": "Clock-in kata, for practicing writing (tests with) Promises",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --compilers js:babel-register src",
+    "test": "mocha --timeout 10000 --compilers js:babel-register src ",
     "test:watch": "npm test -- --watch"
   },
   "repository": {
@@ -22,5 +22,9 @@
     "babel-preset-stage-0": "^6.5.0",
     "babel-register": "^6.7.2",
     "mocha": "^2.4.5"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "xmlhttprequest": "^1.8.0"
   }
 }
