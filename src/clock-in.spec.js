@@ -6,20 +6,71 @@ const serverUrl = "http://127.0.0.1:3000"
 
 // promise that returns the gps coordinates
 const gpsIsAvailable = new Promise((resolve, reject) => {
-    resolve();
+    let xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+        if (this.readyState === 4) {
+            if (this.status === 200) {
+                // Resolve the promise with the response text
+                resolve(this.responseText);
+            } else {
+                reject(this.responseText);
+            }
+        }
+    };
+    xhttp.open('GET', serverUrl + "/gps-coordinates", true);
+    xhttp.send();
 });
 
 // promise that returns an error when gps coordinates are not available
-// const gpsIsNotAvailable = new Promise((resolve, reject) => {
-//   reject();
-// });
+const gpsIsNotAvailable = new Promise(function (resolve, reject) {
+    reject('GPS data is not available...');
+});
 
-async function clockIn() {
+function clockIn(sendGpsData, gpsDataRequired, test) {
+
+    // checks if gps data is required
+    if (gpsDataRequired) {
+        gpsIsNotAvailable.then((value) => {
+            console.log("this will not be called...");
+        }).catch((error) => {
+            console.error("Error: " + error);
+        });
+    } else if (sendGpsData) {
+        // get gps data from server
+        gpsIsAvailable
+            .then((value) => {
+                // clock in sending the gps data
+                return sendClockInRequest(value, test);
+            })
+            .then((value) => {
+                handleResolve(value);
+            })
+            .catch((error) => {
+                console.error("Error: " + error);
+            });
+    } else {
+        // make simple clock in request without gps data
+        sendClockInRequest('', test)
+            .then((value) => {
+                console.log("Resolved...");
+                handleResolve(value);
+            })
+            .catch((error) => {
+                console.error("Error: " + error);
+            });
+    }
+}
+
+function sendClockInRequest(gpsData, testNbr) {
     return new Promise(function (resolve, reject) {
+        let data = '';
+        // if (gpsData !== '')
+            data = "gpsData=" + gpsData + "&testNbr=" + testNbr;
+
         let xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function () {
-            if (this.readyState === 4) {
-                if (this.status === 200) {
+            if (xhttp.readyState === 4) {
+                if (xhttp.status === 200) {
                     // Resolve the promise with the response text
                     resolve(this.responseText);
                 } else {
@@ -28,52 +79,58 @@ async function clockIn() {
                 }
             }
         };
-        xhttp.onerror = function() {
-            reject("Request failed");
-        };
-        xhttp.open('GET', serverUrl+"/clock-in", true);
-        xhttp.send();
+        xhttp.open('post', serverUrl + "/clock-in", true);
+        // xhttp.send(data);
+        xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhttp.send(data);
     });
 }
 
-function displayMsg(msg){
-  console.log(msg);
+function handleResolve(value) {
+    console.log(value);
 }
+
+function handleReject(reason) {
+    console.error(reason);
+}
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
 
 describe('time tracking', () => {
+    let testRan = 0;
+
     context('GPS is required', () => {
-        it('sends a simple clock in', () => {
-            clockIn()
-                .then(
-                    function(value) {displayMsg(value);},
-                    function(error){displayMsg(error);}
-                );
+
+        beforeEach(function () {
+            testRan++;
+            console.log("Initializing... Test " + testRan);
         });
 
-        // it('sends clock-in when GPS is available', () =>
-        //   sendClockIn(gpsIsAvailable).then((gpsCoordinates) => {
-        //     // gps coordinates are available, send clockin to server
-        //     console.log('Clock-in sent to server with GPS coordinates:', gpsCoordinates);
-        //   })
-        // );
+        it('sends clock-in when GPS is available', () => {
+            clockIn(true, false, testRan);
+        });
 
-        // it('sends clock-in with coordinates when GPS is available', (done) => {
-        // });
-        //
-        // it('does NOT send clock-in when no GPS is available', (done) => {
-        //   sendClockIn(gpsIsNotAvailable)
-        //     .then(() => assert(false, 'Promise should have been rejected'))
-        //     .catch(done);
-        // });
-        //
-        // it('warns the user when no GPS is available', () => {
-        //
-        // });
+        it('does NOT send clock-in when no GPS is available', () => {
+            clockIn(true, true);
+        });
+
+        it('warns the user when no GPS is available', () => {
+            gpsIsNotAvailable.catch((error) => {
+                console.error(error);
+            })
+        });
     });
 
-    // context('GPS is optional', () => {
-    //   // it('does NOT send GPS data when no GPS is available', () => {
-    //   //
-    //   // });
-    // });
+    context('GPS is optional', () => {
+        beforeEach(function () {
+            testRan++;
+            console.log("Initializing... Test " + testRan);
+        });
+
+        it('does NOT send GPS data when no GPS is available', () => {
+            clockIn(false, false, testRan);
+        });
+    });
 });
