@@ -1,56 +1,36 @@
-# Clock-in kata
+# Before running tests
 
-Practice writing (tests with) Promises.
+After downloading the project from GitHub:
+- Open up a terminal window.
+- Go to the project folder ```clock-in-katta```.
+- Execute the command ```npm install``` to install the packages.
 
-# What is the task?
+# How to run the tests
 
-A time tracking tool, that optionally also accepts GPS positions.
-Implement the collecting of all GPS data (using promises) and sending to the server using some asynchronous method, like XHR or fetch (using promises too).
-Implement a `clockIn()` function that returns a promise and works as the diagrams below show.
+To run the tests in IntelliJ:
+- Start the server by running the ```server.js``` file.
+- Execute the test's script by running the script ```clock-in.spec.js``` file.
 
-Or in other words: the "boss" can determine
-1) if only times shall be tracked, without any GPS position recoding (one async action, the XHR) or
-2) GPS can be optionally added to the XHR data to be sent, getting GPS is async too,
-3) require GPS data to be sent with the XHR
+To run the tests from the command line.
+- Open up a terminal window.
+- Go to the folder ```src``` located inside the clock-in-kata project's folder.
+- Execute the following command ```npm test```.
 
-# Where to start?
+# Application design
+System's architecture is based on a backend server developed based on Node.js. The server uses Express, a Node.js web application framework to provide http methods for communication with the client.
 
-- start with case 1), the simplest
-- mock/stub the actual XHR and build all cases incl. error cases that might happen when sending an XHR
-- mock/stub the GPS-data retreival, implement case 2), watch out there are multiple execution paths
-- case 3) incl. retrying should be a piece of cake now
-- prevent that any test times out, ensure that all Promise-paths are tested
+Tests are running using Mocha's JavaScript test framework, which also runs in Node.js and allows asynchronous testing.
 
-# Next steps
+All the tests make use of JavaScript's promises to allow asynchronous testing. Communication with the server is made by using XMLHttpRequest.
 
-If you want to get more challenging you can go the next steps like this:
-- search for a library that makes testing with Promises easier
-- use one or many library to find out which one suites best your needs
-- mock that getting retreiving GPS data takes very long, trigger a time out
-  and report it to the user
-- write tests that verify the timing of the things happening, e.g.
-  that the clock-in call NEVER starts before the gps-retreival had
-  finished
+# Parts pending to implement in the application
+- GPS retry.
 
-# Promise test libraries
+# Improvements I would do in the code with extra time
+- Retrieve data from the server using fetch Api, for example.
+- Improve code readability specialy for the ```clockIn()``` function.
 
-- [mocha] brings built in promise support
-- [chai-as-promised] adds promise support to [chai]
-- [hamjest] is an assertion library that can be used with any testing framework/lib, and has nice [promise support][hamjest-promise-support]
-- [tap] has [promise support][tap-promises] too
-- [ava] has [promise support][ava-promise] too
+# Self-evaluation of product readiness of your solution, between 1 (Not ready) and 5 (100% ready).
+- A value of 3, 60% ready! It works, but lacks some basic but important functionalities, like for example, the retry capability when GPS data is required but not available at the moment of the clock-in!
+- Some edge tests should also be performed to garantee the functionality of the solution in diferent scenarios.
 
-[ava]: https://github.com/sindresorhus/ava
-[ava-promise]: https://github.com/sindresorhus/ava#promise-support
-[tap]: http://www.node-tap.org/
-[tap-promises]: http://www.node-tap.org/promises/
-[chai]: http://chaijs.com/
-[chai-as-promised]: https://github.com/domenic/chai-as-promised
-[mocha]: http://mochajs.org/
-[hamjest]: https://github.com/rluba/hamjest
-[hamjest-promise-support]: https://github.com/rluba/hamjest/wiki/Matcher-documentation#promise-matchers
-
-
-# What to do?
-
-![the tasks](clock-in-kata-cases.png)
